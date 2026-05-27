@@ -22,7 +22,7 @@
 }
 
 body{
-    background:#f3f4f6;
+    background:#f1f5f9;
     padding:20px;
     color:#111827;
 }
@@ -39,6 +39,7 @@ body{
     font-size:30px;
     font-weight:700;
     margin-bottom:15px;
+    color:#111827;
 }
 
 /* =========================
@@ -52,13 +53,18 @@ body{
 
 .search-box input{
     width:100%;
-    padding:15px 18px;
+    padding:16px 20px;
     border:none;
-    border-radius:18px;
+    border-radius:20px;
     font-size:15px;
     outline:none;
-    background:#fff;
+    background:#ffffff;
     box-shadow:0 5px 20px rgba(0,0,0,0.08);
+    transition:0.3s;
+}
+
+.search-box input:focus{
+    box-shadow:0 5px 25px rgba(59,130,246,0.25);
 }
 
 /* =========================
@@ -68,9 +74,9 @@ body{
 .table-container{
     width:100%;
     overflow:auto;
-    background:#fff;
-    border-radius:22px;
-    box-shadow:0 5px 25px rgba(0,0,0,0.08);
+    background:#ffffff;
+    border-radius:24px;
+    box-shadow:0 8px 30px rgba(0,0,0,0.08);
 }
 
 table{
@@ -81,23 +87,25 @@ table{
 
 thead{
     background:#111827;
-    color:#fff;
+    color:#ffffff;
     position:sticky;
     top:0;
     z-index:10;
 }
 
 th{
-    padding:16px;
+    padding:18px 16px;
     text-align:left;
     font-size:14px;
     font-weight:600;
+    white-space:nowrap;
 }
 
 td{
-    padding:15px 16px;
+    padding:16px;
     border-bottom:1px solid #e5e7eb;
     font-size:14px;
+    vertical-align:middle;
 }
 
 tbody tr{
@@ -105,45 +113,48 @@ tbody tr{
 }
 
 tbody tr:hover{
-    background:#f9fafb;
+    background:#f8fafc;
 }
 
 /* =========================
-   BADGE POSISI
+   BADGE
 ========================= */
 
 .badge{
-    padding:7px 14px;
+    padding:8px 14px;
     border-radius:999px;
-    color:#fff;
     font-size:12px;
     font-weight:600;
     display:inline-block;
+    color:#ffffff;
 }
 
-/* Pembayaran = Gold */
+/* PY = GOLD */
 
 .pembayaran{
     background:#facc15;
     color:#111827;
 }
 
-/* Pengambilan = Merah */
+/* TK = MERAH */
 
 .pengambilan{
     background:#ef4444;
+    color:#ffffff;
 }
 
-/* Trf / Cash = Hijau */
+/* TF / CS = HIJAU */
 
 .masuk{
     background:#22c55e;
+    color:#ffffff;
 }
 
-/* Default */
+/* DEFAULT */
 
 .default{
     background:#6b7280;
+    color:#ffffff;
 }
 
 /* =========================
@@ -151,8 +162,9 @@ tbody tr:hover{
 ========================= */
 
 .nominal{
-    font-weight:600;
+    font-weight:700;
     color:#111827;
+    white-space:nowrap;
 }
 
 /* =========================
@@ -164,10 +176,10 @@ tbody tr:hover{
     right:20px;
     bottom:20px;
     background:#111827;
-    color:#fff;
+    color:#ffffff;
     padding:20px 24px;
-    border-radius:22px;
-    box-shadow:0 10px 35px rgba(0,0,0,0.25);
+    border-radius:24px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.25);
     z-index:999;
     min-width:240px;
     animation:fadeIn 0.5s ease;
@@ -181,8 +193,9 @@ tbody tr:hover{
 }
 
 .floating-card h2{
-    font-size:26px;
+    font-size:28px;
     font-weight:700;
+    line-height:1.2;
 }
 
 /* =========================
@@ -200,14 +213,17 @@ tbody tr:hover{
 ========================= */
 
 @keyframes fadeIn{
+
     from{
         opacity:0;
         transform:translateY(20px);
     }
+
     to{
         opacity:1;
         transform:translateY(0);
     }
+
 }
 
 /* =========================
@@ -221,15 +237,27 @@ tbody tr:hover{
     }
 
     .header h1{
-        font-size:23px;
+        font-size:24px;
+    }
+
+    .search-box input{
+        padding:14px 16px;
+        font-size:14px;
     }
 
     th{
         font-size:13px;
+        padding:14px;
     }
 
     td{
         font-size:13px;
+        padding:14px;
+    }
+
+    .badge{
+        font-size:11px;
+        padding:7px 12px;
     }
 
     .floating-card{
@@ -237,11 +265,11 @@ tbody tr:hover{
         right:12px;
         bottom:12px;
         min-width:auto;
-        border-radius:18px;
+        border-radius:20px;
     }
 
     .floating-card h2{
-        font-size:22px;
+        font-size:24px;
     }
 
 }
@@ -259,11 +287,13 @@ tbody tr:hover{
     <h1>Data Keuangan</h1>
 
     <div class="search-box">
+
         <input 
             type="text" 
             id="searchInput"
             placeholder="Cari tanggal, kode, keterangan, posisi, nominal, user id..."
         >
+
     </div>
 
 </div>
@@ -277,6 +307,7 @@ tbody tr:hover{
     <table>
 
         <thead>
+
             <tr>
                 <th>Tanggal</th>
                 <th>Kode</th>
@@ -285,6 +316,7 @@ tbody tr:hover{
                 <th>Nominal</th>
                 <th>User ID</th>
             </tr>
+
         </thead>
 
         <tbody id="tableBody">
@@ -345,11 +377,6 @@ function formatRupiah(angka){
 function formatTanggal(value){
 
     if(!value) return '';
-
-    /*
-    Format:
-    Date(2026,4,30)
-    */
 
     const match = value.match(/Date\((\d+),(\d+),(\d+)\)/);
 
@@ -429,7 +456,8 @@ async function loadData(){
 
 function renderTable(data){
 
-    const tableBody = document.getElementById('tableBody');
+    const tableBody =
+        document.getElementById('tableBody');
 
     if(data.length === 0){
 
@@ -457,24 +485,32 @@ function renderTable(data){
 
         let posisiClass = 'default';
 
-        const posisi =
-            item.posisi.toString().toLowerCase();
-
         /* =========================
-           WARNA POSISI
+           WARNA BERDASARKAN
+           CELL B = KODE
         ========================= */
 
-        if(posisi.includes('pembayaran')){
+        const kode =
+            item.kode.toString().toUpperCase();
+
+        /*
+        PY = GOLD
+        TK = MERAH
+        TF = HIJAU
+        CS = HIJAU
+        */
+
+        if(kode.includes('PY')){
 
             posisiClass = 'pembayaran';
 
-        }else if(posisi.includes('pengambilan')){
+        }else if(kode.includes('TK')){
 
             posisiClass = 'pengambilan';
 
         }else if(
-            posisi.includes('trf') ||
-            posisi.includes('cash')
+            kode.includes('TF') ||
+            kode.includes('CS')
         ){
 
             posisiClass = 'masuk';
@@ -482,19 +518,20 @@ function renderTable(data){
         }
 
         html += `
+
             <tr>
 
                 <td>${item.tanggal}</td>
 
-                <td>${item.kode}</td>
+                <td>
+                    <span class="badge ${posisiClass}">
+                        ${item.kode}
+                    </span>
+                </td>
 
                 <td>${item.keterangan}</td>
 
-                <td>
-                    <span class="badge ${posisiClass}">
-                        ${item.posisi}
-                    </span>
-                </td>
+                <td>${item.posisi}</td>
 
                 <td class="nominal">
                     Rp. ${formatRupiah(item.nominal)}
@@ -503,6 +540,7 @@ function renderTable(data){
                 <td>${item.userId}</td>
 
             </tr>
+
         `;
 
     });
