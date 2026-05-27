@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Data Keuangan</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Poppins',sans-serif;
+}
+
+body{
+    background:#f3f4f6;
+    padding:20px;
+    color:#111827;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header{
+    margin-bottom:20px;
+}
+
+.header h1{
+    font-size:28px;
+    font-weight:700;
+    margin-bottom:15px;
+}
+
+/* =========================
+   SEARCH BOX
+========================= */
+
+.search-box{
+    width:100%;
+    position:relative;
+}
+
+.search-box input{
+    width:100%;
+    padding:14px 18px;
+    border:none;
+    border-radius:16px;
+    font-size:15px;
+    outline:none;
+    background:#fff;
+    box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   TABLE
+========================= */
+
+.table-container{
+    width:100%;
+    overflow:auto;
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.08);
+}
+
+table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+}
+
+thead{
+    background:#111827;
+    color:#fff;
+}
+
+th{
+    padding:16px;
+    text-align:left;
+    font-size:14px;
+    font-weight:600;
+}
+
+td{
+    padding:14px 16px;
+    border-bottom:1px solid #e5e7eb;
+    font-size:14px;
+}
+
+tbody tr:hover{
+    background:#f9fafb;
+}
+
+/* =========================
+   POSITION BADGE
+========================= */
+
+.badge{
+    padding:6px 12px;
+    border-radius:999px;
+    color:#fff;
+    font-size:12px;
+    font-weight:600;
+    display:inline-block;
+}
+
+.masuk{
+    background:#10b981;
+}
+
+.keluar{
+    background:#ef4444;
+}
+
+/* =========================
+   FLOATING CARD
+========================= */
+
+.floating-card{
+    position:fixed;
+    right:20px;
+    bottom:20px;
+    background:#111827;
+    color:#fff;
+    padding:18px 22px;
+    border-radius:20px;
+    box-shadow:0 10px 30px rgba(0,0,0,0.25);
+    z-index:999;
+    min-width:220px;
+}
+
+.floating-card h3{
+    font-size:14px;
+    font-weight:500;
+    margin-bottom:6px;
+    opacity:0.9;
+}
+
+.floating-card h2{
+    font-size:24px;
+    font-weight:700;
+}
+
+/* =========================
+   LOADING
+========================= */
+
+.loading{
+    padding:30px;
+    text-align:center;
+}
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media(max-width:768px){
+
+    body{
+        padding:12px;
+    }
+
+    .header h1{
+        font-size:22px;
+    }
+
+    .floating-card{
+        left:12px;
+        right:12px;
+        bottom:12px;
+        min-width:auto;
+    }
+
+}
+
+</style>
+</head>
+<body>
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<div class="header">
+
+    <h1>Data Keuangan</h1>
+
+    <div class="search-box">
+        <input 
+            type="text" 
+            id="searchInput"
+            placeholder="Cari data tanggal, kode, keterangan, posisi, nominal, user id..."
+        >
+    </div>
+
+</div>
+
+<!-- =========================
+     TABLE
+========================= -->
+
+<div class="table-container">
+
+    <table>
+
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Kode</th>
+                <th>Keterangan</th>
+                <th>Posisi</th>
+                <th>Nominal</th>
+                <th>User ID</th>
+            </tr>
+        </thead>
+
+        <tbody id="tableBody">
+            <tr>
+                <td colspan="6" class="loading">
+                    Memuat data...
+                </td>
+            </tr>
+        </tbody>
+
+    </table>
+
+</div>
+
+<!-- =========================
+     FLOATING TOTAL
+========================= -->
+
+<div class="floating-card">
+
+    <h3>Jumlah Uang</h3>
+
+    <h2 id="totalUang">
+        Rp. 0
+    </h2>
+
+</div>
+
+<script>
+
+/* =========================================
+   GOOGLE SHEET CSV
+========================================= */
+
+/*
+GANTI Sheet1 jika nama sheet berbeda
+*/
+
+const sheetURL =
+'https://docs.google.com/spreadsheets/d/1hAhqTkCE0iZ68saOfaXJQ02--HwWq6tM6eAYqDjz0Qg/gviz/tq?tqx=out:json&gid=1419195723';
+
+let allData = [];
+
+/* =========================================
+   FORMAT RUPIAH
+========================================= */
+
+function formatRupiah(angka){
+
+    angka = Number(angka) || 0;
+
+    return angka.toLocaleString('id-ID');
+
+}
+
+/* =========================================
+   AMBIL DATA
+========================================= */
+
+async function loadData(){
+
+    try{
+
+        const response = await fetch(sheetURL);
+
+        const text = await response.text();
+
+        const json = JSON.parse(
+            text.substring(47).slice(0,-2)
+        );
+
+        const rows = json.table.rows;
+
+        allData = rows.map(row => {
+
+            const c = row.c;
+
+            return {
+
+                tanggal   : c[0]?.v || '',
+                kode      : c[1]?.v || '',
+                keterangan: c[2]?.v || '',
+                posisi    : c[3]?.v || '',
+                nominal   : Number(c[4]?.v || 0),
+                userId    : c[5]?.v || ''
+
+            };
+
+        });
+
+        renderTable(allData);
+
+    }catch(error){
+
+        document.getElementById('tableBody').innerHTML = `
+            <tr>
+                <td colspan="6" class="loading">
+                    Gagal mengambil data
+                </td>
+            </tr>
+        `;
+
+        console.log(error);
+
+    }
+
+}
+
+/* =========================================
+   RENDER TABLE
+========================================= */
+
+function renderTable(data){
+
+    const tableBody = document.getElementById('tableBody');
+
+    if(data.length === 0){
+
+        tableBody.innerHTML = `
+            <tr>
+                <td colspan="6" class="loading">
+                    Data tidak ditemukan
+                </td>
+            </tr>
+        `;
+
+        updateTotal(0);
+
+        return;
+
+    }
+
+    let html = '';
+
+    let total = 0;
+
+    data.forEach(item => {
+
+        total += item.nominal;
+
+        const posisiClass =
+            item.posisi.toString().toLowerCase() === 'masuk'
+            ? 'masuk'
+            : 'keluar';
+
+        html += `
+            <tr>
+
+                <td>${item.tanggal}</td>
+
+                <td>${item.kode}</td>
+
+                <td>${item.keterangan}</td>
+
+                <td>
+                    <span class="badge ${posisiClass}">
+                        ${item.posisi}
+                    </span>
+                </td>
+
+                <td>
+                    Rp. ${formatRupiah(item.nominal)}
+                </td>
+
+                <td>${item.userId}</td>
+
+            </tr>
+        `;
+
+    });
+
+    tableBody.innerHTML = html;
+
+    updateTotal(total);
+
+}
+
+/* =========================================
+   UPDATE TOTAL
+========================================= */
+
+function updateTotal(total){
+
+    document.getElementById('totalUang').innerHTML =
+        'Rp. ' + formatRupiah(total);
+
+}
+
+/* =========================================
+   SEARCH FILTER
+========================================= */
+
+document
+.getElementById('searchInput')
+.addEventListener('keyup', function(){
+
+    const keyword =
+        this.value.toLowerCase();
+
+    const filtered = allData.filter(item => {
+
+        return (
+
+            item.tanggal.toString().toLowerCase().includes(keyword) ||
+            item.kode.toString().toLowerCase().includes(keyword) ||
+            item.keterangan.toString().toLowerCase().includes(keyword) ||
+            item.posisi.toString().toLowerCase().includes(keyword) ||
+            item.nominal.toString().toLowerCase().includes(keyword) ||
+            item.userId.toString().toLowerCase().includes(keyword)
+
+        );
+
+    });
+
+    renderTable(filtered);
+
+});
+
+/* =========================================
+   LOAD AWAL
+========================================= */
+
+loadData();
+
+</script>
+
+</body>
+</html>
